@@ -1,0 +1,431 @@
+\documentclass{article}
+
+
+% if you need to pass options to natbib, use, e.g.:
+     \PassOptionsToPackage{numbers, compress}{natbib}
+% before loading neurips_2023
+
+
+% % %ready for submission
+%  \usepackage{style/neurips_2023}
+
+
+% to compile a preprint version, e.g., for submission to arXiv, add add the
+% [preprint] option:
+%    \usepackage[preprint]{style/neurips_2023}
+
+
+% to compile a camera-ready version, add the [final] option, e.g.:
+     \usepackage{style/neurips_2023}
+
+
+% to avoid loading the natbib package, add option nonatbib:
+%     \usepackage[nonatbib]{style/neurips_2023}
+
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+% \usepackage{xcolor}         % colors
+\usepackage{adjustbox}
+\usepackage{wrapfig}
+\usepackage{enumitem}
+\usepackage[normalem]{ulem}
+\usepackage{comment}
+%%%%%%%%%%%%%%%% ADDED BY THE AUTHORS
+\usepackage[dvipsnames]{xcolor}
+\input{style/macro}
+
+
+\usepackage[toc,page,header]{appendix}
+\usepackage{minitoc}
+
+% Make the "Part I" text invisible
+\renewcommand \thepart{}
+\renewcommand \partname{}
+
+\usepackage{mathtools}
+\usepackage{amsthm}
+
+\usepackage[createShortEnv,conf={no link to proof, text link},commandRef=Cref]{style/proof-at-the-end}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{assumption}[theorem]{Assumption}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{example}{Example}
+
+\usepackage[capitalize,noabbrev]{cleveref}
+
+
+\usepackage{algorithm,algpseudocodex}
+\usepackage{xspace} % Added for the spacing issue.
+% \newcommand{\method}{Heat Geodesic Embedding~}
+\newcommand{\method}{Geometry-Aware Generative Autoencoders\xspace} 
+\newcommand{\methodshort}{GAGA\xspace}
+\newcommand{\rebuttal}[1]{\textcolor{blue}{#1}}
+\newcommand{\gui}[1]{\textcolor{olive}{[GH: #1]}}
+\newcommand{\xin}[1]{\textcolor{teal}{[XS: #1]}}
+\newcommand{\danqi}[1]{\textcolor{cyan}{[Danqi: #1]}}
+\newcommand{\km}[1]{\textcolor{olive}{[KM: #1]}}
+\newcommand{\ian}[1]{\textcolor{green}{[Ian: #1]}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\title{Geometry-Aware Generative Autoencoders for Metric Learning and Generative Modeling on Data Manifolds}
+
+
+% The \author macro works with any number of authors. There are two commands
+% used to separate the names and addresses of multiple authors: \And and \AND.
+%
+% Using \And between authors leaves it to LaTeX to determine where to break the
+% lines. Using \AND forces a line break at that point. So, if LaTeX puts 3 of 4
+% authors names on the first line, and the last on the second line, try using
+% \AND instead of \And before the third author name.
+
+
+\author{
+  % Guillaume Huguet$^1$\thanks{Equal contribution} \quad
+  % Alexander Tong$^1$\footnotemark[1] \quad
+  % Edward De Brouwer$^2$\footnotemark[1] \quad
+  % \AND
+  % Yanlei Zhang$^1$ \quad
+  % Guy Wolf$^1$ \quad
+  % Ian Adelstein$^2$\thanks{Co-senior authors} \quad
+  % Smita Krishnaswamy$^2$\footnotemark[2] \\
+  % $^1$Université de Montréal; Mila - Quebec AI Institute \quad $^2$ Yale University
+}
+
+\usepackage[capitalize,noabbrev]{cleveref}
+
+% \usepackage{xcolor}
+% \hypersetup{
+%     colorlinks,
+%     linkcolor={red!50!black},
+%     citecolor={blue!50!black},
+%     urlcolor={blue!80!black}
+% }
+
+\begin{document}
+
+%\doparttoc % Tell to minitoc to generate a toc for the parts
+%\faketableofcontents % Run a fake tableofcontents command for the partocs
+
+%\part{} % Start the document part # This takes an extra line, and we go over the 9 page limits.
+
+
+\maketitle
+
+
+\begin{abstract}
+Non-linear dimensionality reduction methods have proven successful at learning low-dimensional representations of high-dimensional point clouds on or near data manifolds. However, existing methods are not easily extensible—that is, for large datasets, it is prohibitively expensive to add new points to these embeddings. As a result, it is very difficult to use existing embeddings generatively, to sample new points on and along these manifolds. In this paper, we propose GAGA (geometry-aware generative autoencoders) a framework which merges the power of generative deep learning with non-linear manifold learning by: 1) learning generalizable geometry-aware neural network embeddings based on non-linear dimensionality reduction methods like PHATE and diffusion maps, 2) sampling new points using latent space diffusion on these embeddings, 3) deriving a non-euclidean pullback metric on the embedded space to generate points faithfully along manifold geodesics, and 4) learning a flow on the manifold that allows us to transport populations. We provide illustration on easily-interpretable synthetic datasets and showcase results on simulated and real single cell datasets. In particular, we show that the geodesic-based generation can be especially important for scientific datasets where the manifold represents a state space and geodesics can represent dynamics of entities over this space.  
+\end{abstract}
+
+\section{Introduction}
+\par There has been rapid growth for high-dimensional scientific data such as scRNA-seq data and molecular data. These high-dimensional data are assumed to be concentrated in intrinsically low-dimensional manifolds that are embedded and observed in high-dimensional space. Reliably accessing the intrinsic geometry of the underlying data manifold and computing geometric quantities such as geodesic, volume, and curvature, has become increasingly important for scientific datasets as they provide crucial insights into the data. For example, for longitudinal data, manifold represents a state space and geodesics can represent dynamics of entities over this space. 
+
+Existing methods of learning geometric quantities often rely on obtaining a global Euclidean metric by attempting to flatten the intrinsically curved data manifold. Other works leverage data diffusion embeddings and diffusion distances to access the underlying data geometry but these methods do not learn continuous metrics and can not generalize to unseen points.  As a result, it is very difficult to use existing embeddings generatively and to sample new points on and along these manifolds faithfully.
+
+Here, we propose a generalizable geometric-aware generative autoencoder (GAGA) that preserves geometry in latent embeddings by matching euclidean distances in latent embeddings with diffusion distance in original data space based on non-linear dimension reduction methods such as PHATE and diffusion maps. GAGA can generate news points on the data manifold, along the geodesics, and at the population levels. GAGA samples new points on the data manifold by leveraging diffusion model on the denoised latent space and decode generated points in latent space back to the original data space. 
+
+Generating along geodesics on data manifold often poses a challenge as it requires a meaningful Rienmannian metric on the data manifold to measure the arc length, and a way to restrict the path to stay on the manifold. To tackle this challenge, we propose a novel non-euclidean metric on the latent space by folding off-manifold points in extra dimensions, and we realize a continuous metric on the original data space via the Riemannian pullback metric. The non-euclidean metric measures the length of curves on the manifold, but incurs a sharp penalty in length whenever the curve strays off the manifold.
+
+
+Empirically, we show that our geometric-aware embeddings preserve geodesic distances on synthetic toy datasets and simulated single-cell datasets, scoring the highest DeMAP (Denoised Manifold Affinity Preservatoin) among all methods. We also demonstrate that GAGA can effectively denoise single-cell data and capture gene-gene correlation. For generating along geodesics on the data manifold, we show that our non-euclidean metric can generate geodesics between different points on toy datasets such as torus, hemisphere, and single-cell datasets EB, and (?). 
+
+
+\section{Background}
+\subsection{Diffusion geometry}
+
+\subsection{Riemannian manifold and metric}
+
+
+
+
+
+\section{Methods}
+\xin{too much text, put in pseudocode}\\
+\xin{subsections too short, can change to the paragraph: e.g. training, deployment}\\
+
+\subsection{Geometric-Aware Autoencoder}
+We train a geometric-aware autoencoder that preserves meaningful geometric information in latent embeddings by matching Euclidean distance in latent embeddings with diffusion distances in data point cloud. 
+\xin{explain what these are a loss of, do not put the "DM" there}
+
+Specifically, geometric-aware autoencoder comprises an encoder $f$ that maps input data $x \sim X \subset \mathbb{R}^n$ to embedding $z \subset \mathbb{R}^d$ in latent space and a decoder  that maps the latent embedding $z$ back to $\hat x \subset \mathbb{R}^n$ in original data space (called ambient space).
+% \begin{align}
+%     f(x)=&z\\
+%     g(z)=&\hat x.
+% \end{align}
+\par The training objective has two loss terms: distance matching loss and reconstruction loss. The distance matching loss encourages latent embeddings to preserve geodesic distances, and the reconstruction loss encourages the autoencoder to recover the original data from the latent embeddings.
+\begin{align}
+    L = L^{DM} + L^{recon} 
+\end{align}
+where
+\begin{align}
+    L^{DM}=\frac{1}{n}\sum_{i<j}e^{-\alpha d_ij}\left(||z_i-z_j||^2_2-d_{ij}\right)^2,
+\end{align}
+and 
+\begin{align}
+    L^{recon}=\frac{1}{n}\sum_{i=1}^n||x_i-g(f(x_i))||_2^2,
+\end{align}
+
+where $\alpha>=0$ is a hyperparameter to control the amount of weight decay for pair of distances. When $\alpha=0$, equal weights are placed on each pair of distances, and when $\alpha>0$, exponential decay weights are used to emphasize preserving local distances.
+
+\subsubsection{Locally euclidean metric on latent manifold}
+By matching euclidean distances between latent embeddings with diffusion distances between points in data space, geometric-aware autoencoder learns a denoised latent manifold with locally euclidean metric $g_d$. We can obtain a Riemmanian metric $g_f$ on the manifold in the original data space using Riemmanian pullback metric:
+\par Suppose we have the encoder $f:\mathbb R^n\to\mathbb R^d$. We induce a metric $g_f$ on the data manifold $\mathcal M^n \subset \mathbb R^n$, through pullback of the metric $g_d$ in the latent manifold $\mathcal M^d \subset \mathbb R^{d}$:
+\begin{align}\label{pullback}
+    g_f:=f^*g_d&:T\mathcal M^n\times T\mathcal M^n\to \mathbb R\\
+    f^*g_d(x)&=J_f(x)^T g_d J_f(x),    
+\end{align}
+where $J_{f}$ is the Jacobian of $f$.
+
+
+\subsection{Generative modeling on manifold}
+\paragraph{Generating everywhere on manifold} With the learned latent embeddings, we can sample new points on the data manifold by first fitting a diffusion model on the denoised, lower-dimensional latent manifold, and then decoding these new points back to the original data space. 
+
+\paragraph{Generating along geodesics on manifold}
+In addition to sampling on the manifold, geometric-aware autoencoder can also generate points along geodesics on the manifold. First we propose a non-euclidean metric on the latent space for both points on the manifold and off the manifold. Then, we compute a continuous metric on the original data space via Riemmanian pullback metric through the encoder. With a continuous metric on data manifold, we model the geodesic between points through direct parametrization of curves, and sample new points along the geodesic on the data manifold.
+
+\paragraph{Metric on and off the manifold}
+Faithfully walking along the manifold has been a long-standing challenge in machine learning: it requires a continuous metric not only on the manifold but also off the manifold so that curves can stay on the manifold without straying away. 
+
+% we learn a map $\xi: \mathbb{R}^{d} \rightarrow \mathbb{R}^{d+s}$ that preserves the dense regions of the embedding space within an $\mathbb{R}^{d}$ subspace of $\mathbb{R}^{d+5}$, but folds points off the manifold into higher dimensions:
+
+% $$
+% \xi(x) = I_d \oplus 0_{(m-d) \times(m-d)} + 0_{d \times d} \oplus I_{m-d} k(x) d(x)^\alpha
+% $$
+
+% Here $k:\mathbb{R}^d \to \mathbb{R}^m$ is a map that projects different parts of $\mathbb{R}^d$ into differing higher dimensions (e.g. a random matrix of size $m \times d$) and $d:\mathbb{R}^d \to \mathbb{R}$ is a `witness function' that discriminates whether $x$ is off the manifold, and how far off the manifold. 
+
+
+% The pullback metric $\xi^{*}$ obtained from this map measures the Euclidean length of curves on the manifold, but incurs a sharp penalty in length whenever the curve strays of the manifold. 
+% We find that this unified loss finds more accurate geodesics then the standard multi-loss approach.
+
+
+Here, we introduce a non-euclidean metric on the latent space that applies both on and off the manifold. The idea is to use a local Euclidean metric on the manifold and an increasingly large metric for points increasingly away from the manifold by folding points off the manifold into extra dimensions. 
+
+Suppose we have a distance function $\mathcal{D}: \mathbb R^d \to \mathbb R$ that quantifies how far off $x$ is from the manifold $\mathcal{M}^n$. $R$ is a random matrix in $\mathbb{R}^{d \times (d+q)}$.  $\mathcal{I}$ is the identity matrix in $\mathbb{R}^{d\times d}$. The non-euclidean metric on the latent space is defined as:
+
+\begin{align} 
+    g_d(x) := \mathcal{I} + R  * \mathcal{D}(x)
+\end{align}
+
+For points on the manifold, $\mathcal{D}(x)$ will be around 0, whereas for points off the manifold, $\mathcal{D}(x)$ correlates with how far away these points are from the manifold. 
+
+We train the distance function $\mathcal{D}$ by maximizing the Wasserstein distances between points on the manifold and points off the manifold. Points off the manifold are simulated through negative sampling. 
+
+
+
+
+\paragraph{Non-euclidean pullback metric}
+With the latent space metric, we can compute a continuous metric on data space via Riemannian pullback metric through the geometric-aware encoder, using equation \ref{pullback}. This metric measures the Euclidean length of curves on the data manifold, but incurs a sharp penalty in length whenever the curve strays of the manifold. 
+
+% \par Suppose we have the encoder $f:\mathbb R^n\to\mathbb R^d$. We induce a metric $g_f$ on the data space $\mathbb R^n$, through pullback of the metric $g_d$ in the latent space $\mathbb R^{d}$:
+% \begin{align}
+%     g_f:=f^*g_d&:T\mathcal M\times T\mathcal M\to \mathbb R\\
+%     f^*g_d(x)&=J_f(x)^T g_d J_f(x),    
+% \end{align}
+% where $J_{f}$ is the Jacobian of $f$.
+
+% The standard Euclidean metric in ambient space is usually unreliable in high-dimensional, noisy, sparse data. This encoder pullback metric $g_d$ assigns a locally euclidean structure to data which ignores noise and adapts to variations in density.
+
+\paragraph{Geodesic bridge}
+\xin{its from fim journal version; dont want to highlight as a key contribution; can write in a as \textit{low-key} as possible way, "we consider a new parameterization, why use this: (ablation study?)"}\\
+\xin{1. some method does that, one is ODE, however its slow/need to force end points there, hence we use this. <at the end> we empirically validated this is faster/no need that loss term.}
+
+\par To compute geodesics between pairs of points on the manifold, we use a parametrization of curves akin to Schr\"odinger Bridge but with deterministic components
+\cite{fasina2023neural}. We train a function $C_\theta(x_0,x_1,t): \R^d \times \R^d \times [0,1] \to \R^d$ such that $C_\theta(x_0,x_1,t) := \mu(x_0,x_1,t) + \sigma(t)g_\theta(x_0,x_1,t)$, where
+\begin{enumerate}
+    \item $\mu(x_0, x_1, t):= tx_1 + (1-t)x_0$ is a linear interpolation guiding the center of the curve,
+    \item $\sigma(t): [0,1] \to \R+$ can be seen as a variance term enforcing our boundary conditions,
+    \item $g_\theta(x_0,x_1,t): \R^d \times \R^d \times [0,1] \to \R^d$, represent the displacement of the position at a given time $t$ with respect to the linear interpolation $\mu(x_0,x_1,t)$.
+\end{enumerate}
+\par The velocity is computed using the gradient of the network.
+\begin{align}
+    h_\theta(x_0,x_1,t)=\frac{\partial}{\partial t}C_\theta(x_0,x_1,t)
+\end{align}
+where $h_\theta$ is a neural network parameterized by $\theta$. This allows us to approximate (\ref{eqn:geod_opt}) by optimizing over $\theta$. We implement the boundary conditions using a regularization term $||\hat x_1-x_1||^2_2$, where $\hat x_1=x_0+\int_{0}^{1}h_\theta(x(t),t)dt$.
+In conclusion, the loss function w.r.t. $\theta$ is
+\begin{align}
+    \mathcal L(\theta)=\int_{0}^{1}\sqrt{h_\theta(x,t)^T g_f(x(t))h_\theta(x,t)}dt
+\end{align}
+The integration is approximated with a Riemann sum.
+
+\subsection{Generating geodesics between populations}
+We can also transport point cloud data along geodesics at the population level\cite{fasina2023neural}.
+\par We do this iteratively: in each iteration, we compute the optimal transport pairing of the points, and retrain the geodesics between the pairs, until the total length of the curves are minimized. For more details, see Algorithm \ref{alg:mbotcfm}.
+
+\begin{algorithm}[htbp]
+  \caption{Minibatch Geodesic FM}
+  \label{alg:mbotcfm}
+\begin{algorithmic}
+\State {\bfseries Input:} Empirical or samplable distributions $q_0,q_1$, variance schedule $\sigma_k(t)$, batch size $b$, initial curve network $C_\theta$, metric $g$, $T$ times to sample.
+\While{Training}
+\Comment{Sample batches of size $b$ \textit{i.i.d.} from the datasets}
+\State $\vx_0 \sim q_0(\vx_0); \quad \vx_1 \sim q_1(\vx_1)$
+\State $\pi \gets \mathrm{OT}(\vx_1, \vx_0)$
+\State $(\vx_0, \vx_1) \sim \pi$
+\State $\vt \sim (\mathcal{U}(0, 1))^T$
+\State $L(C_\theta) \gets C_\theta(\vx_0, \vx_1, \vt)$ \Comment{Length of current curve}
+\State $\theta \gets \mathrm{Update}(\theta, \nabla_\theta L(\gamma))$
+\EndWhile
+\State \Return $C_\theta$
+\end{algorithmic}
+\end{algorithm}
+
+\section{Results}
+\subsection{Geometric-Aware Autoencoder}
+In this section, we first provide a quantitative evaluation of \methodshort's embedding and reconstruction. Then, we visualize the embeddings for a qualitative assessment. Lastly, we show that \methodshort's pull-back metric provides curvature, a geometric quantity on the manifold. We compare \methodshort with autoencoder and with exponential distance decay weight. 
+\subsubsection{Quantitative evaluation on embedding}
+\par We generated single cell RNA-sequence datasets with different data generation and noise settings using splatter\cite{zappia2017splatter}, so that we can compare the output of \methodshort with the ground truth.
+\par We first compare the distance from our embedding with PHATE, the distance we trained the model with. The accuracy is defined as
+\begin{align}
+    \text{Distance Accuracy}=\frac{2}{N(N-1)}\sum_{i<j}\Bigg|\frac{||z_i-z_j||^2_2-d_{ij}^2}{d^2_{ij}}\Bigg|
+\end{align}
+Where $z_i=f(x_i)$ is the output of the encoder, and $d_{ij}$ is the PHATE distance between $x_i$ and $x_j$.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth]{fig/PLACEHOLDER.png}
+    \caption{\methodshort matches distances with high accuracy}
+    \label{fig:dist_acc}
+\end{figure}
+\par In Figure \ref{fig:dist_acc}, we show that \methodshort has high accruacy for distance preservation at different settings.
+\par DEMaP\cite{moon2019visualizing} measures how well the embedding preserves geodesic distances. It first computes the graph shortest path distance $d_{ij}^{\text{Dijkstra}}$ between each pair of points on the noiseless data as ground truth using Dijkstra's algorithm, and then computes the correlation between pairwise distances in the embedding space and the ground truth.
+\begin{align}
+    \text{DEMaP}=\frac{2}{N(N-1)}\sum_{i<j}\operatorname{Corr}(||z_i-z_j||^2_2-(d_{ij}^{\text{Dijkstra}})^2)
+\end{align}
+where $\operatorname{Corr}$ denotes Pearson correlation.
+In Figure \ref{fig:demap}, we show that \methodshort has good preservation of geodesic distances, with high DEMaP score at various settings. Moreover, the score is close to that of PHATE, which is the distance the model is trained with.
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth]{fig/demap.png}
+    \caption{DEMaP shows \methodshort recovers geodesic distances provided by PHATE}
+    \label{fig:demap}
+\end{figure}
+\par To evaluate the reconstruction of \methodshort, we compute the mean squared error, and two novel criteria called \textit{DGCS (Denoised Gene Correlation Score)} and \textit{DRS (Denoised Reconstruction Score)}. Due to the noisy nature of the single cell data, we would not want a perfect reconstruction of the data, but would like to recover the gene trends in the denoised data. We first apply MAGIC\cite{van2018recovering} to denoise the data, and compare the pearson correlation between each gene pair in the denoised data and in the reconstructed data. (\methodshort is trained on the PCA space so we use inverse PCA to map the reconstructed points back to the gene space.) In addition, we also compute the mean pearson correlation between each gene in the denoised data and that gene in the reconstructed data.
+\begin{align}
+    \text{DGCS}=&\frac{2}{N_{\text{gene}}(N_{\text{gene}}-1)}\sum_{i<j}(\operatorname{Corr}(y_i,y_j)-\operatorname{Corr}(y^{\text{MAGIC}}_i,y^{\text{MAGIC}}_j))^2\\
+    \text{DRS}=&\frac{1}{N_{\text{gene}}}\sum_{i=1}^{N_{\text{gene}}}\operatorname{Corr}(y_i,y^{\text{MAGIC}}_i)
+\end{align}
+where $y_i=\operatorname{PCA^{-1}}(g(f(x_i))$, $y^{\text{MAGIC}}_i=\operatorname{PCA^{-1}}(\operatorname{MAGIC}(x_i))$
+\par Figure \ref{fig:recon_score} shows \methodshort captures gene-gene correlation and has high correlation with denoised data.
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth]{fig/PLACEHOLDER.png}
+    \caption{Reconstruction metrics show \methodshort captures gene-gene correlation and has high correlation with denoised data}
+    \label{fig:recon_score}
+\end{figure}
+\subsubsection{Visualizations}
+\par In Figure \ref{fig:embedding} we visualize \methodshort's 2D embeddings trained on real-world scRNAseq data (Embryo-body\cite{moon2019visualizing} and SEA-AD\cite{gabitto2023integrated}). We compared the PHATE embedding, and \methodshort trained without and with the exponential distance decay. We can see that the exponential distance decay helps the model better capture the local distances, and thus better preserves the manifold structure.
+\par With the pullback metric from \methodshort's encoder, we compute the volume by taking the pseudo-determinant of the metric matrix at each point, and visualize it on toy datasets (Figure \ref{fig:volume})
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth]{fig/visualization.png}
+    \caption{Visualization of the embedding}
+    \label{fig:embedding}
+\end{figure}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth]{fig/volume.png}
+    \caption{Volume computed with the pullback metric on sphere, torus, and saddle}
+    \label{fig:volume}
+\end{figure}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth]{fig/PLACEHOLDER.png}
+    \caption{Curvature computed with the pullback metric}
+    \label{fig:volume}
+\end{figure}
+\subsection{Generative Denoising Model}
+\par We evaluate the generated points of the Generative Denoising Model on the latent space and the reconstruction space. On the latent space, we compute the 2-Wasserstein distance between the generated data and the test data to show \methodshort can generate a population of data with a distribution close to the true data, and does not exactly reproduce the training data. On the reconstrunction space, we compute DGCS to show the generated data has the same gene-gene correlation trend as the true data. In Figure \ref{fig:dm_eval} We 
+\par In Figure \ref{fig:dm_eval} we plotted the metrics on generated points as we increase of latent space dimensions. In Figure \ref{fig:gen_corr} We plot the gene-gene correlations of the top 100 highly variable genes for a qualitative evaluation.
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth]{fig/dm_eval.png}
+    \caption{Evaluation metrics on generated points as dimensions of latent space increase.}
+    \label{fig:dm_eval}
+\end{figure}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth]{fig/gen_corr.png}
+    \caption{Gene-gene correlation of generated points compared with that of MAGIC}
+    \label{fig:gen_corr}
+\end{figure}
+
+\subsection{Pointwise Geodesic computation}
+\par We first visualize our discriminator and extended-dimension embedding on the toy dataset. (Figures \ref{fig:discriminator},\ref{fig:offmfdr})
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth]{fig/discriminator.png}
+    \caption{Discriminator prediction on toy data with negative sampling}
+    \label{fig:discriminator}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth]{fig/offmfdr.png}
+    \caption{Extended space for off-manifold data}
+    \label{fig:offmfdr}
+\end{figure}
+
+\par Then we visualize the geodesic learned on toy datasets in Figure \ref{fig:geod_toy}. The geodesics learned by \methodshort is straight when examined by the eye. In Figure \ref{fig:geod_eb}, we show the geodesic learned on the Embryo Body data. The starting point correspond to time point 0 of the EB, while the ending points are selected in each time bin where the sample is collected. The geodesic learned agrees with the biological understanding of the data, which shows the capability of \methodshort to apply to real-world data.
+\par In Figure \ref{fig:geod_metrics}, we compute two metrics for the geodesic: We first obtain the ground truth geodesics and their lengths using the analytical expressions of the manifolds, if available, or using the Dijkstra's algorithm. We then compute the geodesic with \methodshort, and compute their lengths. We compute the correlation of the geodesic length with the ground truth, as well as the average minimal distance of the points on \methodshort's geodesic to the true geodesic. The result shows \methodshort learns a curve that is close to the true geodesic, with a length closest to the shortest length.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth]{fig/geod_toy.png}
+    \caption{Geodesic on toy manifolds}
+    \label{fig:geod_toy}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth]{fig/geod_eb.png}
+    \caption{Geodesic on Embryo Body dataset}
+    \label{fig:geod_eb}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth]{fig/geod_metrics.png}
+    \caption{Evaluation metrics on geodesics}
+    \label{fig:geod_metrics}
+\end{figure}
+\subsection{Population-wise Geodesic Generation}
+\par We learned the population-wise geodesics with the optimal pairing on a toy sphere dataset. Figure \ref{fig:latent_only_2} shows the learned geodesics on the latent space, and compared with flow-matching without the metric, the geodesics \methodshort learns are closer to the true geodesic.
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth]{fig/latent_only_2.png}
+    \caption{Population-wise geodesic generated on toy manifold}
+    \label{fig:latent_only_2}
+\end{figure}
+
+\section{Related Work}
+\par Several prior works have been done on learning continuous metrics in data ambient space. Neural FIM \cite{fasina2023neural} learns the Fisher Information Metric from point cloud data by matching Jensen-Shannon divergence between rows of distribution in a latent statistical manifold with Jensen-Shannon divergence between rows of diffusion probability from PHATE operator. 
+
+
+\section{Conclusion}
+\par In this paper, we propose a geometric-aware generative autoencoder (GAGA) that preserves geometry in latent embeddings and can generate news points on the data manifold, along the geodesics, and at the population levels. We circumvent the limitations of existing manifold learning methods by training generalizable geometric-aware neural network embeddings, and learning non-euclidean metric on data space via Riemannian pullback metric.
+%\newpage
+
+%\clearpage
+\bibliographystyle{plainnat}
+%\bibliography{ref}
+\bibliography{ref}
+
+
+
+\end{document}

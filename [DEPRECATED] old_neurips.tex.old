@@ -1,0 +1,384 @@
+\documentclass{article}
+
+
+% if you need to pass options to natbib, use, e.g.:
+     \PassOptionsToPackage{numbers, compress}{natbib}
+% before loading neurips_2023
+
+
+% % %ready for submission
+%  \usepackage{style/neurips_2023}
+
+
+% to compile a preprint version, e.g., for submission to arXiv, add add the
+% [preprint] option:
+%    \usepackage[preprint]{style/neurips_2023}
+
+
+% to compile a camera-ready version, add the [final] option, e.g.:
+     \usepackage[final]{style/neurips_2023}
+
+
+% to avoid loading the natbib package, add option nonatbib:
+%     \usepackage[nonatbib]{style/neurips_2023}
+
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{xcolor}         % colors
+\usepackage{adjustbox}
+\usepackage{wrapfig}
+\usepackage{enumitem}
+
+%%%%%%%%%%%%%%%% ADDED BY THE AUTHORS
+
+
+\input{style/macro}
+
+
+\usepackage[toc,page,header]{appendix}
+\usepackage{minitoc}
+
+% Make the "Part I" text invisible
+\renewcommand \thepart{}
+\renewcommand \partname{}
+
+\usepackage{mathtools}
+\usepackage{amsthm}
+
+\usepackage[createShortEnv,conf={no link to proof, text link},commandRef=Cref]{style/proof-at-the-end}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{assumption}[theorem]{Assumption}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{example}{Example}
+
+\usepackage[capitalize,noabbrev]{cleveref}
+
+
+\usepackage{algorithm,algpseudocodex}
+\usepackage{xspace} % Added for the spacing issue.
+% \newcommand{\method}{Heat Geodesic Embedding~}
+\newcommand{\method}{Heat Geodesic Embedding\xspace} 
+\newcommand{\methodshort}{HeatGeo\xspace}
+\newcommand{\rebuttal}[1]{\textcolor{blue}{#1}}
+\newcommand{\gui}[1]{\textcolor{olive}{[GH: #1]}}
+\newcommand{\xin}[1]{\textcolor{teal}{[XS: #1]}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\title{Mapifying Geometric Embeddings with Autoencoders for Visualization and Generation}
+
+
+% The \author macro works with any number of authors. There are two commands
+% used to separate the names and addresses of multiple authors: \And and \AND.
+%
+% Using \And between authors leaves it to LaTeX to determine where to break the
+% lines. Using \AND forces a line break at that point. So, if LaTeX puts 3 of 4
+% authors names on the first line, and the last on the second line, try using
+% \AND instead of \And before the third author name.
+
+
+\author{
+  % Guillaume Huguet$^1$\thanks{Equal contribution} \quad
+  % Alexander Tong$^1$\footnotemark[1] \quad
+  % Edward De Brouwer$^2$\footnotemark[1] \quad
+  % \AND
+  % Yanlei Zhang$^1$ \quad
+  % Guy Wolf$^1$ \quad
+  % Ian Adelstein$^2$\thanks{Co-senior authors} \quad
+  % Smita Krishnaswamy$^2$\footnotemark[2] \\
+  % $^1$Université de Montréal; Mila - Quebec AI Institute \quad $^2$ Yale University
+  Zinedine Zidane
+}
+
+\usepackage[capitalize,noabbrev]{cleveref}
+
+% \usepackage{xcolor}
+% \hypersetup{
+%     colorlinks,
+%     linkcolor={red!50!black},
+%     citecolor={blue!50!black},
+%     urlcolor={blue!80!black}
+% }
+
+\begin{document}
+
+%\doparttoc % Tell to minitoc to generate a toc for the parts
+%\faketableofcontents % Run a fake tableofcontents command for the partocs
+
+%\part{} % Start the document part # This takes an extra line, and we go over the 9 page limits.
+
+
+\maketitle
+
+
+\begin{abstract}
+GAE are good!
+\end{abstract}
+
+\section{Introduction}
+
+
+\paragraph{Graph construction and diffusion}\gui{Copied from previous paper}
+
+Our construction starts by creating a graph from a point cloud dataset $\mX$ of size $n$. We use a kernel function $\kappa:\mathbb{R}^d\times \mathbb{R}^d \to \mathbb{R}^+$, such that the (weighted) adjacency matrix is $\mW_{ij} := \kappa(x_i,x_j)$ for all $x_i,x_j\in\mX$. The kernel function could be a Gaussian kernel, or constructed from a nearest neighbor graph. The resulting graph $\gG$ is characterized by the set of nodes (an ordering of the observations), the adjacency matrix, and the set of edges, i.e. pairs of nodes with non-zero weights. The graph Laplacian is an operator acting on signals on $\gG$ such that it mimics the negative of the Laplace operator. The combinatorial graph Laplacian matrix is defined as $\mL := \mQ - \mW$ and its normalized version as $\mL = \bm{I}_n - \mQ^{-1/2}\mW\mQ^{-1/2}$, where $\mQ$ is a diagonal degree matrix with $\mQ_{ii} := \sum_j\mW_{ij}$. The Laplacian is symmetric positive semi-definite, and has an eigen-decomposition $\mL = \Psi \Lambda \Psi^T$. Throughout the presentation, we assume that $\mQ_{ii}>0$ for all $i\in\{1,\dotsc,n\}$. The Laplacian allows us to  define the heat equation on $\gG$, with respect to an initial signal $\vf_0\in\mathbb{R}^n$ on $\gG$:% For a signal $\vf_0\in\mathbb{R}^n$ on $\gG$, the diffusion of $\vf_0$ on the graph evolves according to the heat equation 
+\begin{equation}
+    \frac{\partial}{\partial t}\vf(t) + \mL \vf(t) = \bm{0},\,s.t. \quad \vf(0) = \vf_0 \quad t\in\mathbb{R}^+.
+\end{equation}
+
+The solution of the above differential equation is obtained with the matrix exponential $\vf(t) = e^{-t\mL}\vf_0$, and we define the heat kernel on the graph as $\mH_t:=e^{-t\mL}$. By eigendecomposition, we have $\mH_t = \Psi e^{-t\Lambda}\Psi^T$. The matrix $\mH_t$ is a diffusion matrix that characterizes how a signal propagate through the graph according to the heat equations.
+
+
+
+Other diffusion matrices on graphs have also been investigated in the literature. The transition matrix $\mP:=\mQ^{-1}\mW$ characterizing a random walk on the graph is another common diffusion matrix used for manifold learning such as PHATE~\cite{moon_visualizing_2019} and diffusion maps~\cite{coifman_diffusion_2006}. It is a stochastic matrix that converges to a stationary distribution $\vpi_i:=\mQ_{ii}/\sum_i\mQ_{ii}$, under mild assumptions. 
+
+
+\section{Related Work}\label{sec: related work}\gui{Copied from previous paper}
+
+We review state-of-the-art embedding methods and contextualize them with respect to \method. A formal theoretical comparison of all methods is given in Section~\ref{sec: relation_other_methods}. Given a set of high-dimensional datapoints, the objective of embedding methods is to create a map that embeds the observations in a lower dimensional space, while preserving distances or similarities. Different methods vary by their choice of distance or dissimilarity functions, as shown below.
+
+\paragraph{Diffusion maps} In diffusion maps~\cite{coifman_diffusion_2006}, an embedding in $k$ dimensions is defined via the first $k$ non-trivial right eigenvectors of the t-steps random walk $\mP^t$ weighted by their eigenvalues. The embedding preserves the \textbf{\textit{diffusion distance}} $ DM_{\mP}(x_i,x_j):=\| (\boldsymbol{\delta_i}\mP^t - \boldsymbol{\delta_j}\mP^t)  (1/\vpi) \|_2$, where $\boldsymbol{\delta}_i$ is a vector such that $(\boldsymbol{\delta}_i)_j = 1$ if $j=i$ and $0$ otherwise, and $\vpi$ is the stationary distribution of $\mP$. Intuitively, $DM_{\mP}(x_i,x_j)$ considers all the $t$-steps paths between $x_i$ and $x_j$. A larger diffusion time can be seen as a low frequency graph filter, i.e. keeping only information from the low frequency transitions such has the stationary distributions. For this reason, using diffusion with $t>1$ helps denoising the relationship between observations. 
+
+
+\paragraph{PHATE} This diffusion-based method preserves the \textbf{\textit{potential distance}}~\cite{moon_visualizing_2019} $PH_{\mP}:= \| -\log\boldsymbol{\delta}_i\mP^t + \log\boldsymbol{\delta}_j\mP^t \|_2$, and justifies this approach using the $\log$ transformation to prevent nearest neighbors from dominating the distances. An alternative approach is suggested using a square root transformation. Part of our contributions is to justify the $\log$ transformation from a geometric point of view. The embedding is defined using multidimensional scaling, which we present below.
+ 
+
+\paragraph{SNE, t-SNE, UMAP} Well-known attraction/repulsion methods such as SNE~\cite{hinton2002stochastic}, t-SNE~\cite{van2008visualizing}, and UMAP~\cite{mcinnes2018umap} define an affinity matrix with entries $p_{ij}$ in the ambient space, and another affinity matrix with entries $q_{ij}$ in the embedded space. To define the embedding, a loss between the two affinity matrices is minimized. Specifically, the loss function is $\KL(p||q):=\sum_{ij}p_{ij}\log p_{ij}/q_{ij}$ in SNE and t-SNE, whereas UMAP is equivalent to adding $\KL(1-p||1-q)$ for unnormalized densities~\cite{bohm2022attraction}. While these methods preserve affinities, they do not preserve any types of distances in the embedding. 
+
+
+
+\begin{algorithm}[ht]
+  \caption{\method}
+  \label{alg:Heat_geo}
+\begin{algorithmic}[1]
+\State {\bfseries Input:} $N \times d$ dataset matrix $\mX$, denoising parameter $\rho\in[0,1]$, Harnack regularization $\sigma > 0$, output dimension $k$.
+\State {\bfseries Returns:} $N \times k$ embedding matrix $\mE$.
+\State $\mH_t \gets p_K(\mL,t)$
+\Comment{Heat approximation}
+\State $t \gets \text{Kneedle} \{H(\mH_t)\}_t$
+\Comment{Knee detection e.g. \cite{satopaa2011finding}}
+\State $\mD \gets \left[-4t\log (\mH_t)_{ij} - \sigma 4t \log (\mV_t)_{ij}\right]^{1/2}$
+\Comment{$\log$ is applied elementwise}
+\State $\mD \gets (1-\rho)\mD + \rho \DT$
+\Comment{Triplet interpolation step}
+\State Return $\mE \gets \mathrm{MetricMDS}(\mD, \| \cdot \|_2,k)$
+\end{algorithmic}
+\end{algorithm}
+
+
+\paragraph{Theory}
+
+\begin{propositionE}[][end,restate]
+Example proposition
+\begin{equation*}
+     PH_{\mH_t} = (1/4t)^2\|d_t(x_i,\cdot) - d_t(x_j,\cdot)\|_2^2,
+\end{equation*}
+    and it is equivalent to a multiscale random walk distance with kernel $\sum_{k>0} m_t(k)\mP^k$, where $m_t(k):=t^ke^{-t}/k!$.
+\end{propositionE}
+
+\begin{proof} Outline of the proof to use in the main body of the text
+\end{proof}
+
+\begin{proofE}
+Full proof
+\end{proofE}
+
+
+\section{Method}
+Geometrically, what is the purpose of an autoencoder? If one has geometric information about a dataset (say, approximate geodesic distances), what does it mean to create an embedding that \emph{respects} this geometric prior?
+
+One finds two opposing threads in the literature. On one hand, a common motivation is to embed such that the nuisances are geometry are \emph{removed} -- by forcing your approximate geodesic distances to match Euclidean distances in latent space. This technique appeared two decades ago with Laplacian Eigenmap-style embeddings like Diffusion Maps [cite], which create a (high-dimensional) embedding space in which Euclidean distances are defined as the approximate manifold distances. More recently, Euclideanizing embeddings such as the geodesic autoencoder in MIOFlow [cite] and FlowArtist [cite] allow learning simpler flows in a dimensionally-reduced Euclidean space which map onto a more complex manifold geometry. However, for manifolds of non-zero curvature, embedding manifold distances to match straight lines in low dimensions is a mathematical impossibility. Autoencoders that adopt this objective may uncover interesting high-level structural information about their input data, but cannot help but destroy the more intricate, local geometric features.
+
+Another framing of autoencoders draws analogy to the local 'charts' used in Riemannian geometry and topology. A pointcloud embedded in 10 dimensions might represent a 2-manifold -- which means, topologically, that there is some map between a region of this manifold, and $R^2$. If we train an autoencoder to become this map -- that is, map data to its intrinsic dimension -- then we can employ a range of theoretical artillery. We can use this map to extract the manifold's non-Euclidean intrinsic metric. We can learn geodesics on the manifold without any chance they'll slip off. This is the framing of [Fred's Geometric Autoencoder paper], which noted that the more non-Euclidean you make the embedding, the better it represents the data. While promising, this approach asks a lot from the autoencoder: the decoding must be near \emph{perfect}, and for topologically non-trivial manifolds, an 'atlas' of autoencoders must be trained.
+
+Here we present a third framing of geometrically-aware autoencoders: to 'rescue' manifolds from their twisted, high-dimensional, noisy embeddings --- projecting them into a lower-dimensional space such that the manifold is maximally \emph{locally Euclidean}. By analogy, consider an ellipsoid wrapped into a four-dimensional spiral and peppered with noise. Like the canonical 'swiss roll', our optimal embedding would unwrap the ellipsoid and denoise it. Unlike the swiss roll, doing so should not destroy the curvature of the manifold. Making the embedding maximally locally Euclidean does not mean 'Euclideanizing' it, but only making the local Euclidean metric as faithful as possible to the manifold geometry.
+
+We now describe the geodesic autoencoder we designed for this task. We demonstrate the fidelity of the euclidean metric in its latent spaces by learning geodesics and curvature within them. And we illustrate means to make learning in the Euclidean latent space easier with a pullback metric that restricts methods to the sampled data.
+
+
+\subsection{Autoencoder}
+\subsubsection{Distance Matching Autoencoder}
+\subsection{Diffusion Model}
+\subsubsection{Use the learned score function for normal vector}
+\subsection{Geodesic using pullback metric}\xin{Adapted from the neural FIM paper and Ian's notes}
+\subsubsection{Geodesic on ambient space}
+\par Suppose we have the encoder $f:\mathbb R^n\to\mathbb R^d$, and we want to compute the geodesic on the manifold in the ambient space $\mathcal M^d\subset\mathbb R^n$.
+We first compute the pullback metric of the Euclidean metric in the latent space $\mathbb R^{d}$
+\begin{align}
+    g_f:=f^*g_d&:T\mathcal M\times T\mathcal M\to \mathbb R\\
+    f^*g_d(x)&=J_f(x)^T g_d J_f(x)=J_f(x)^T J_f(x),    
+\end{align}
+\xin{$g_d$ is not necessarily the Eucidean metric}
+
+\xin{this is different from neural FIM as we are not taking the expectation over some probability distribution $\phi$.}
+
+where $J_f(x)=\left(\frac{\partial f_i}{\partial x_j}(x)\right)_{n\times n}$ is the Jacobian of $f$, $g_d=I_d$ is the Euclidean metric on $\mathbb R^d$.
+\par Given $x_0,x_1\in \mathcal M$, we want to solve for the geodesic between them, i.e., to find
+\begin{align}
+    c^*\in\underset{c\in C}{\arg\min}\int_{0}^{1}\sqrt{\dot c(t)^Tg_f(c(t))\dot c(t)} dt\label{eqn:geod_opt}
+\end{align}
+% \gui{Should this be}
+% \begin{equation*}
+%     c^* \in {\arg\min}_{c\in\gC}\int_a^b \sqrt{g_f(\dot{c(t)}, \dot{c(t)}}) dt
+% \end{equation*}
+where $C=\{c\in \mathcal C^{1}(\left[0,1\right]): c(0)=x_0,c(1)=x_1, c(t)\in\mathcal M,\forall t\in\left[0,1\right]\}$.
+\par \xin{The neural FIM paper use ODE and geodesic bridge to solve for the geodesic, implementationwise, we can first use the ODE because the code for the geodesic bridge is not ready yet.}
+\par We solve this minimization using neural ODE. 
+We model the velocity field of the curve using a neural network
+\begin{align}
+    \frac{dx}{dt}(x,t)=h_\theta(x,t),
+\end{align}
+where $h_\theta$ is a neural network parameterized by $\theta$. This allows us to approximate (\ref{eqn:geod_opt}) by optimizing over $\theta$. We implement the boundary conditions using a regularization term $||\hat x_1-x_1||^2_2$, where $\hat x_1=x_0+\int_{0}^{1}h_\theta(x(t),t)dt$.
+In conclusion, the loss function w.r.t. $\theta$ is
+\begin{align}
+    \mathcal L(\theta)=\int_{0}^{1}\sqrt{h_\theta(x,t)^T g_f(x(t))h_\theta(x,t)}dt+\lambda \Big|\Big|x_0-x_1+\int_{0}^{1}h_\theta(x(t),t)dt\Big|\Big|^2_2,\label{expn:geod_loss}
+\end{align}
+where $\lambda> 0$ is the coefficient for regularization.
+\par \xin{How did neural FIM deal with this? some regularization?} Note that in order to keep the curve on the manifold, we want $h_\theta(x,t)\in T_x\mathcal M$. One way to do this is instead of directly parameterizing the vector with a neural network, compute the tangent vector as the a linear combination of a moving frame, and use a neural network to compute the linear coefficients. The frame can be computed by taking the right singular vectors of the Jacobian. That is,
+\begin{align}
+    h_\theta(x,t)=V(x)\alpha_\theta(x,t)
+\end{align}
+where $V$ is computed using the singular value decomposition
+\begin{align}
+    J_f(x)=U(x)S(x)V(x)^T.
+\end{align}
+\par We notice that using this parameterization we can  simplify (\ref{expn:geod_loss}) as
+\begin{align}
+    % \mathcal L(\theta)&=\int_{0}^{1}\sqrt{\alpha(x(t),t)^TS(x(t))^2\alpha(x(t),t)}dt+\lambda \Big|\Big|x_0-x_1+\int_{0}^{1}V(x(t))\alpha_\theta(x(t),t)dt\Big|\Big|^2_2\label{expn:geod_loss_simplif}\\
+    L(\theta)&=\int_{0}^{1}\sqrt{\alpha_\theta^TS^2\alpha_\theta}dt+\lambda \Big|\Big|x_0-x_1+\int_{0}^{1}V\alpha_\theta dt\Big|\Big|^2_2\label{expn:geod_loss_simplif}
+\end{align}
+% let $h_\theta(x,t)$ be a neural network parameterized by $\theta$
+% \begin{align}
+%     \underset{\theta}{\arg \min } \lambda\left\|\hat{\theta}_2-\theta_2\right\|_2^2+\int_a^b \sqrt{f_\theta^T \cdot g_{\gamma(t)} \cdot f_\theta} d t .
+% \end{align}
+\subsection{Geodesic on the latent space}
+\xin{Maybe we want to learn a geodesic in the latent space and decode it to the ambient space. We might want to be careful to see if the results are consistent for different metrics on the latent space (and maybe also with the geodesic computed directly in the ambient space), and if not, which one do we want.}
+\par There are two ways of getting a pullback metric on the latent space which we use to compute the geodesic: Using the left inverse of the encoder Jacobian and using the decoder Jacobian. If the encoder and the decoder compose to identity, these two metrics will be the same, and do not entail information of the embedding, only depending on the geometry of the manifold in the ambient space. However, in reality this perfect identity is not achieved due to the denoising effect and imperfect reconstructions of the autoencoder. 
+\par Suppose we have encoder $f:\mathcal M\to\mathcal N$ and decoder $w:\mathcal N\to\hat{\mathcal M}$, for simplicity we assume $w\circ f=\operatorname{id}.$ Then we have 
+\begin{align}
+    J_wJ_f=I
+\end{align}
+so $J_w$ is a left inverse of $J_f$. We can use $J_w$ to pull back a metric on the reconstructed ambient space $g_{\hat{\mathcal M}}$ to the latent space, $g_w:=w^*g_{\hat{\mathcal M}}$. Similar to \ref{expn:geod_loss} We can solve for the geosesic
+by solving an optimization problem
+\begin{align}
+    c^*\in\underset{c\in C}{\arg\min}\int_{0}^{1}\sqrt{\dot c(t)^Tg_w(c(t))\dot c(t)} dt\label{eqn:geod_opt_latent}
+\end{align}
+where $C=\{c\in \mathcal C^{1}(\left[0,1\right]): c(0)=x_0,c(1)=x_1, c(t)\in\mathcal N,\forall t\in\left[0,1\right]\}$.
+with the loss 
+\begin{align}
+    \mathcal L(\theta)=\int_{0}^{1}\sqrt{h_\theta(x,t)^T g_w(x(t))h_\theta(x,t)}dt+\lambda \Big|\Big|x_0-x_1+\int_{0}^{1}h_\theta(x(t),t)dt\Big|\Big|^2_2,\label{expn:geod_loss_latent}
+\end{align}
+\par Here if we assume $\dim\mathcal N=d$, we have $T_{z}\mathcal M\cong\mathbb R^d,\forall z\in\mathcal M$, and we can take the output dimension of $h_\theta$ to be $d$, without having to add a constraint that it is in the tangent space.
+\subsubsection{Comparision of the two geodesics}
+\xin{TODO make this a lemma? "geodesic computed with the pullback metric maps to the geodesic computed with the metric pulled back"}
+\par To recap, suppose we have two Riemannian manifolds $(\mathcal M,g_{\mathcal M}),(\mathcal N,g_{\mathcal N})$ and a diffeomrophism $f:\mathcal M\to\mathcal N$, we have two ways of computing a geodesic from $x_0,x_1\in\mathcal M$. $\forall\gamma\in\mathcal C^1(\left[0,1\right]),\gamma(t)\in\mathcal M,\forall t\in\left[0,1\right],\gamma(0)=x_0,\gamma(1)=x_1$, let $\eta(t)=f(\gamma(t))$, we can either minimize
+\begin{align}
+    l_{f}(\gamma) &= \int_{0}^{1}\sqrt{\dot \gamma^Tg_{\mathcal M}\dot \gamma} dt
+\end{align}
+or
+\begin{align}
+    l_{w}(\gamma) &= \int_{0}^{1}\sqrt{(f\circ\gamma)'^Tg_{\mathcal N}(f\circ\gamma')} dt\notag\\
+    &=\int_{0}^{1}\sqrt{\dot\gamma^TJ_f^Tg_{\mathcal N}J_f\dot\gamma} dt\\
+    &=\int_{0}^{1}\sqrt{\dot\gamma^Tf^*g_{\mathcal N}\dot\gamma} dt
+\end{align}
+\par One (maybe important) corollary is that the pullback geodesic is invariant to the map $f$ used for pullback, and is only determined by the metric $g_{\mathcal N}$ it pulls back from. This means we probably need to carefully select $g_{\mathcal N}$ to achieve the properties we want. That said, if $f$ is the decoder, then $\mathcal N=\hat{\mathcal M}\neq\mathcal M$, $\hat{\mathcal M}$ is the decoded space and probably has nice properties such as being denoised compared with $\mathcal M$. On the other hand, if $f$ is the encoder, then we are (equivalently) computing the geodesic under the metric $g_\mathcal M$, and even if we use the euclidean, the geodesic would contain information from the encoder, because the latent space $\mathcal N$ is largely dependent on $f$.
+\par A sufficient condition that the two methods would yield the same geodesic is $g_{\mathcal M}= f^*g_{\mathcal N}$. 
+\par For example, if $f$ is the decoder, this shows that if we compute the geodesic $\gamma$ on the latent space $\mathcal M$ using the decoder pullback $f^*g_{\mathcal N}$, and then decode it to $f\circ\gamma$, we would get the same geodesic as if we compute the geodesic on $\mathcal N$ using $g_{\mathcal N}$.
+\par On the other hand, if $f$ is the encoder, this shows that the geodesic computed on the ambient space would encode to the a geodesic in the latent space.
+% \begin{enumerate}
+%     \item Minimize the geodesic distance (\ref{eqn:geod_opt}) with $\gamma$.
+%     \item Minimize the geodesic distance (\ref{eqn:geod_opt_latent}) with $\eta$.
+% \end{enumerate}
+% The difference 
+
+\subsubsection{Decoder-encoder pullback}
+\par To save computational cost, we parameterize the curve (with the geodesic bridge) in the latent space. When computing the cost for geodesic, we use the decoder to put it to ambient space, and on that space use the encoder pullback to compute the cost of infinitesimal move.
+This can be written in the following steps:
+\par Denote the encoder as $f$, decoder as $g$. Denote their Jacobians $J_f,J_g$
+\begin{enumerate}
+    \item parameterize a curve $z(t)$ in the latent space using neural network $z(t)=z_\theta(t)$.
+    \item decode it into ambient space $g(z(t))$
+    \item compute the tangent vector $v=\frac{d}{dt}g(z(t))=J_g\dot z$
+    \item compute the vector length using encoder pullback $||v||^2=v^TJ_f^TMJ_fv$
+    \item plug in 3.: $||v||^2=\dot z^TJ_g^TJ_f^TMJ_fJ_g\dot z=\dot z^TJ_{f\circ g}^TMJ_{f\circ g}\dot z$
+\end{enumerate}
+where $J_{f\circ g}=J_fJ_g=\left(\frac{\partial f_i(g(z))}{\partial z_j}\right)_{n\times n}$
+\begin{itemize}
+    \item In the ideal case $f_i(g(z))=z$ (perfect cycle consistency), with $M$ being euclidean metric on the latent space, so we propose using $I$ for $J_{f\circ g}$
+    \item Use density regularization to keep $z(t)$ on manifold, instead of off-manifold straight lines.
+\end{itemize}
+\par 
+\begin{align*}
+    s_0(x)=\nabla \log p_0(x)\\
+    U(x)=-\log p_0(x)\\
+    F(x)=-\nabla U(x)=s_0(x)
+\end{align*}
+\par 
+% \subsubsection{[TEMP] some implementation notes}
+% \par In order to use the code in the neural FIM, we can do a hot-fix to address the discrepancy bettween our metric and the neural FIM, by setting $\phi=\mathbf 1$ in equation 5. (or just rewrite the fisher\_metric function)
+\subsection{Negative sampling}
+\par add high-frequency noise
+\begin{align*}
+    P=&D^{-1}K\\
+    P=&U\Lambda V^T\\
+    f=&(f_{ij})_{N\times p},f_{ij}\sim\mathcal N(0,1)\\
+    y=&U(I-\Lambda^t) f
+\end{align*}
+
+\subsection{Flow matching with geodesic parametrized curve}
+\gui{Add quick FM overview (maybe it should be in the background), then how we use the parametric curves to create a pushforward between distributions.}
+\section{Experiments}
+\subsubsection{}
+
+\section{Conclusion and Limitations}
+
+
+
+\begin{ack}
+This research was enabled in part by compute resources provided by Mila (mila.quebec).....
+\end{ack}
+
+%\newpage
+
+%\clearpage
+\bibliographystyle{plainnat}
+%\bibliography{ref}
+\bibliography{tidy}
+
+
+
+\newpage
+
+\addcontentsline{toc}{section}{Appendix} % Add the appendix text to the document TOC
+\part{Appendix} % Start the appendix part
+\appendix
+\parttoc % Insert the appendix TOC
+
+\section{Theory and algorithm details}\label{app: Theory and algorithm details}
+
+
+
+\subsection{Proofs}
+
+\printProofs
+
+
+
+
+
+\end{document}

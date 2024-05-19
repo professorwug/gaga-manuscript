@@ -1,0 +1,533 @@
+\documentclass{article}
+
+
+% if you need to pass options to natbib, use, e.g.:
+     \PassOptionsToPackage{numbers, compress}{natbib}
+% before loading neurips_2023
+
+
+% % %ready for submission
+%  \usepackage{style/neurips_2023}
+
+
+% to compile a preprint version, e.g., for submission to arXiv, add add the
+% [preprint] option:
+%    \usepackage[preprint]{style/neurips_2023}
+
+
+% to compile a camera-ready version, add the [final] option, e.g.:
+     \usepackage{style/neurips_2023}
+
+
+% to avoid loading the natbib package, add option nonatbib:
+%     \usepackage[nonatbib]{style/neurips_2023}
+
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+% \usepackage{xcolor}         % colors
+\usepackage{adjustbox}
+\usepackage{wrapfig}
+\usepackage{enumitem}
+\usepackage[normalem]{ulem}
+\usepackage{comment}
+%%%%%%%%%%%%%%%% ADDED BY THE AUTHORS
+\usepackage[dvipsnames]{xcolor}
+\input{style/macro}
+
+
+\usepackage[toc,page,header]{appendix}
+\usepackage{minitoc}
+
+% Make the "Part I" text invisible
+\renewcommand \thepart{}
+\renewcommand \partname{}
+
+\usepackage{mathtools}
+\usepackage{amsthm}
+
+\usepackage[createShortEnv,conf={no link to proof, text link},commandRef=Cref]{style/proof-at-the-end}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{assumption}[theorem]{Assumption}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{example}{Example}
+
+\usepackage[capitalize,noabbrev]{cleveref}
+
+
+\usepackage{algorithm,algpseudocodex}
+\usepackage{xspace} % Added for the spacing issue.
+% \newcommand{\method}{Heat Geodesic Embedding~}
+\newcommand{\method}{Heat Geodesic Embedding\xspace} 
+\newcommand{\methodshort}{HeatGeo\xspace}
+\newcommand{\rebuttal}[1]{\textcolor{blue}{#1}}
+\newcommand{\gui}[1]{\textcolor{olive}{[GH: #1]}}
+\newcommand{\xin}[1]{\textcolor{teal}{[XS: #1]}}
+\newcommand{\danqi}[1]{\textcolor{cyan}{[Danqi: #1]}}
+\newcommand{\km}[1]{\textcolor{olive}{[KM: #1]}}
+\newcommand{\ian}[1]{\textcolor{green}{[Ian: #1]}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\title{Mapifying Geometric Embeddings with Autoencoders for Visualization and Generation}
+
+
+% The \author macro works with any number of authors. There are two commands
+% used to separate the names and addresses of multiple authors: \And and \AND.
+%
+% Using \And between authors leaves it to LaTeX to determine where to break the
+% lines. Using \AND forces a line break at that point. So, if LaTeX puts 3 of 4
+% authors names on the first line, and the last on the second line, try using
+% \AND instead of \And before the third author name.
+
+
+\author{
+  % Guillaume Huguet$^1$\thanks{Equal contribution} \quad
+  % Alexander Tong$^1$\footnotemark[1] \quad
+  % Edward De Brouwer$^2$\footnotemark[1] \quad
+  % \AND
+  % Yanlei Zhang$^1$ \quad
+  % Guy Wolf$^1$ \quad
+  % Ian Adelstein$^2$\thanks{Co-senior authors} \quad
+  % Smita Krishnaswamy$^2$\footnotemark[2] \\
+  % $^1$Université de Montréal; Mila - Quebec AI Institute \quad $^2$ Yale University
+}
+
+\usepackage[capitalize,noabbrev]{cleveref}
+
+% \usepackage{xcolor}
+% \hypersetup{
+%     colorlinks,
+%     linkcolor={red!50!black},
+%     citecolor={blue!50!black},
+%     urlcolor={blue!80!black}
+% }
+
+\begin{document}
+
+%\doparttoc % Tell to minitoc to generate a toc for the parts
+%\faketableofcontents % Run a fake tableofcontents command for the partocs
+
+%\part{} % Start the document part # This takes an extra line, and we go over the 9 page limits.
+
+
+\maketitle
+
+
+\begin{abstract}
+placeholder
+\textcolor{gray}{We propose Geometric-aware Autoencoder for learning continuous Riemannian metrics (GARM?) on data ambient space and generating/interpolating points along the learned data manifold.  Modeling the intrinsic geometry of high-dimensional data and reliably computing geometric quantities on ambient data space has been a long-standing challenge in machine learning. Existing methods of learning geometric quantities often rely on obtaining a global Euclidean metric by attempting to flatten the intrinsically curved data manifold. Other works leverage data diffusion embeddings and diffusion distances to access the underlying data geometry but these methods do not learn continuous metrics and can not generalize to unseen points. GAE framework circumvents the limitations of existing works by encoding point cloud data into a lower-dimensional denoised space such that the manifold is maximally locally Euclidean and pulling back latent metric to induce a continuous metric on ambient space. We demonstrate the fidelity of the Euclidean metric by learning geodesics and curvature within them.  …. }
+\end{abstract}
+
+\section{Introduction}
+
+
+
+
+
+
+
+% Some drafting material, containing themes we can use or discard
+
+
+\km{Some drafting material; heavy revision needed. Contains themes we can use or discard.}
+Geometrically, what is the purpose of an autoencoder? If one has geometric information about a dataset (say, approximate geodesic distances), what does it mean to create an embedding that \emph{respects} this geometric prior?
+
+One finds two opposing threads in the literature. On one hand, a common motivation is to embed such that the nuisances of geometry are \emph{removed} -- by forcing your approximate geodesic distances to match Euclidean distances in latent space. This technique appeared two decades ago with Laplacian Eigenmap-style embeddings like Diffusion Maps [cite], which create a (high-dimensional) embedding space in which Euclidean distances are defined as the approximate manifold distances. More recently, Euclideanizing embeddings such as the geodesic autoencoder in MIOFlow [cite] and FlowArtist [cite] allow learning simpler flows in a dimensionally-reduced Euclidean space which map onto a more complex manifold geometry. However, for manifolds of non-zero curvature, embedding manifold distances to match straight lines in low dimensions is a mathematical impossibility. Autoencoders that adopt this objective may uncover interesting high-level structural information about their input data, but cannot help but destroy the more intricate, local geometric features.
+
+Another framing of autoencoders draws analogy to the local `charts' used in Riemannian geometry and topology. A pointcloud embedded in 10 dimensions might represent a 2-manifold -- which means, topologically, that there is some map between regions of this manifold, and $R^2$. If we train an autoencoder to become this map -- that is, a chart map to the manifold's intrinsic dimension -- then we can employ a range of theoretical artillery. The pullback of the Euclidean metric on latent space via the decoder yields the intrinsic non-Euclidean metric induced on our manifold by its embedding in ambient space. We can learn geodesics on the manifold without any chance they'll slip off. This is the framing of [Fred's Geometric Autoencoder paper], which noted that the more non-Euclidean you make the embedding, the better it represents the data. While promising, this approach asks a lot from the autoencoder: the decoding must be near \emph{perfect}, and for topologically non-trivial manifolds, a whole `atlas' of autoencoders must be trained.
+
+Here we present a third framing of geometrically-aware autoencoders: to `rescue' manifolds from their twisted, high-dimensional, noisy embeddings --- projecting them into a lower-dimensional space such that the manifold is maximally \emph{locally Euclidean}. By analogy, consider an ellipsoid wrapped into a four-dimensional spiral and peppered with noise. Like the canonical `swiss roll', our optimal embedding would unwrap the ellipsoid and denoise it. Unlike the swiss roll, doing so should not destroy the curvature of the manifold. Making the embedding maximally locally Euclidean does not mean `Euclideanizing' it, but only making the local Euclidean metric as faithful as possible to the manifold geometry.
+
+We now describe the geodesic autoencoder we designed for this task. We demonstrate the fidelity of the euclidean metric in its latent spaces by learning geodesics and curvature within them. And we illustrate means to make learning in the Euclidean latent space easier with a pullback metric that restricts methods to the sampled data.
+
+\section{Background}
+\paragraph{Manifold learning and diffusion geometry}
+A widely accepted assumption in learning representations is that high-dimensional data are concentrated in intrinsically low-dimensional manifold that is embedded and observed in high-dimensional space. This assumption is commonly known as the \textit{manifold hypothesis} and forms the pillar of many Machine Learning algorithms. Let $\mathcal{M}^d$ be a hidden $d$ dimensional manifold that is only observable via a collection of $n \gg d$ nonlinear functions $f_1,\ldots,f_n : \mathcal{M}^d \to \mathbbm{R}$ that enable its immersion in a high dimensional ambient space as $F(\mathcal{M}^d) = \{\mathbf{f}(z) = (f_1(z),\ldots,f_n(z))^T : z \in \mathcal{M}^d \} \subseteq \mathbbm{R}^n$ from which data is collected. Conversely, given a dataset $X = \{x_1, \ldots, x_N\} \subset \mathbbm{R}^n$ of high dimensional observations, manifold learning methods assume data points originate from a sampling $Z = \{z_i\}_{i=1}^N \in \mathcal{M}^d$ of the underlying manifold via $x_i = \mathbf{f}(z_i)$, $i = 1, \ldots, n$, and aim to learn a low dimensional intrinsic representation that approximates the manifold geometry of~$\mathcal{M}^d$
+
+Recently diffusion geometry has emerged as a useful paradigm to access the underlying manifold and geometry of observed high-dimensional data. Diffusion geometry describes data based on random-walk or diffusion probability between the data points. This has been shown to be a noise-resilient and adaptive way of learning intrinsic manifold of the data and is used by many manifold learning algorithms including PHATE[cite], Diffusion Map[cite], and so on. 
+
+Diffusion geometry first computes a kernel $\mathcal{K}$ to model data similarities between points. One option for $\mathcal{K}$ is to use a Gaussian kernel $\exp (-\|z_1 - z_2\|^2 / \sigma)$ with a configurable bandwidth $\sigma$. However, this simple Gaussian kernel is not robust to data sampling variations. To control the separation between data density and data geometry, an anisotropic kernel may be used:
+\begin{equation}
+\label{eqn:diffusion_kernel}
+\mathcal{K}(z_1, z_2) = \frac{\mathcal{G}(z_1, z_2)}{\|\mathcal{G}(z_1, \cdot)\|_1^{\alpha} \|\mathcal{G}(z_2,\cdot)\|_1^{\alpha}}, \quad \mathcal{G}(z_1, z_2) = e^{-\frac{\|z_1 - z_2\|^2}{\sigma}},    
+\end{equation}
+with $\alpha = 0$ yielding the classic Gaussian kernel, and $\alpha = 1$ completely removing density and providing a geometric equivalent to uniform sampling of the underlying manifold. Next, $\mathcal{K}$ is normalized to obtain a row-stochastic matrix $P$, with $P(z_1, z_2) = \frac{\mathcal{K}(z_1, z_2)}{\|\mathcal{K}(z_1, \cdot)\|_1}$. $P$ encodes the transition probabilities between points in data.
+ 
+ 
+ 
+\paragraph{Riemannian manifold and metric}
+
+%% Add background on manifold
+
+Given a smooth map between smooth manifolds $f \colon M \to N$ we can define the differential $df$ of this map which at a point $p\in M$ is a map between tangent spaces $df_p \colon T_pM \to T_{f(p)} N$. We can use this map $df$ to pull back a metric $g$ on $N$ to a metric denoted $f^*g$ on $M$. In order to define this pullback we simply need to say what value it takes on a pair of vectors $X,Y \in T_pM$. The pullback metric is defined to be $f^*g(X,Y)= g(df_pX,df_pY )$ where $df_pX,df_pY  \in T_{f(p)} N$ are the pushforward vectors, i.e.~the image of $X$ and $Y$ under the differential. 
+
+
+In the setting of this paper, the map $f$ is the neural network embedding and its differential $df$ is called the Jacobian and denoted $J(f)$. We equip the latent space with the Eucliden metric $g=Id$ because we train embeddings where locally the Euclidean distance in the latent space has geometric relvance. We pullback the Eucliddean metric to the ambient space where it appears equivalently as $f^*g(X,Y)= g(df_pX,df_pY )= X^t J(f)^t_p ~Id~ J(f)_p Y = X^t J(f)^t_p J(f)_p Y$. This pullback metric induces a non-Euclidean geometry on the data manifold (embedded in the high dimensional ambient space) and we can use it to compute standard geometric quantities such as volume, length, and curvature. 
+
+\begin{comment}
+A Riemannian metric is a square matrix $g$ defined for every point $x$ which, through the inner product $\langle v, v\rangle_{g}=u g v^{\top}$, describes the difficulty of moving in each direction around that point. \ian{I don't understand this difficulty comment, maybe you are thinking about the Jacobian?}
+
+The pullback metric given by a map $\varphi: X \rightarrow Y$ ``pulls'' the metric $g_{Y}$ on $Y$ into a metric $\varphi^* g_Y$ on $X$. To find $\left\langle x_{1}, x_{2}\right\rangle_{\varphi} g_{r}$, you use the differential $d\varphi$ (also known, in neural networks, as the Jacobian $J_{\varphi}$) to map tangent vectors from $X$ to $Y$. The pullback metric is then defined as 
+
+$$
+\left\langle J_{\varphi} \left(x_{1}\right), J_{\varphi}\left(x_{2}\right)\right\rangle_{g_Y}
+$$
+, the inner product in $Y$ with respect to $Y$'s metric $g_Y$ at the point $\varphi{x}$.
+\xin{add Neural FIM} \ian{would also just use the language and notation from my write up, feel free to copy/paste the relevant sections, I even comment briefly on the relation to neuralFIM}
+\section{Related Work}
+Several prior works have been done on learning continuous metrics in data ambient space. Neural FIM [CITE] learns the Fisher Information Metric from point cloud data by matching Jensen-Shannon divergence between rows of distribution in a latent statistical manifold with Jensen-Shannon divergence between rows of diffusion probability from PHATE operator. \danqi{data manifold interpolation}
+
+
+\end{comment}
+
+
+\paragraph{NeuralFIM}
+
+The paper NeuralFIM presents a specific example of the general framework that we propose in the current paper. In NeuralFIM, point cloud data is treated as a statistical manifold (each point replaced by its diffusion probability distribution) and a neural net embedding is trained to match Jensin-Shannon divergence. It is shown then that the pullback of the Euclidean metric on the latent space yields the Fisher Information Metric (FIM) on the data/statistical manifold embedded in ambient space. The FIM is a standard metric on statistical manifolds whose intrinsic distances reveal information about the distinguishability between probability distributions. NeuralFIM thus illustrates the idea that a well trained encoder (where Euclidean distance in latent space has intrinsic meaning) produces an informative pullback metric in ambient space. 
+
+``To obtain the continuous FIM for each dataset, we first compute the diffusion operator matrix $\mathbf{P}(x,\cdot) \in R^{n \times n}$ for each batch of point cloud data. We then embed each point in the batch $x_i \in R^{d}$ using the encoding network, neural-FIM $\phi: R^{d} \to R^{m} $ where $d$ is the original dimension of the point cloud data and $m$ is the last dimension of the encoder. Next, train the neural FIM using the loss defined in Equation 6 (matching Jensen-Shannon divergence).
+
+We can then compute the Jacobian  $\mathbf{J}(x_i) \in R^{m \times d}$ for each point of the network output  $x_i \in R^m$  with respect to the input coordinates. An FIM $I_\phi(x_i) \in R^{d \times d}$ can then be computed (using Equation 5) for any point input to neural-FIM, thus yielding a continuous FIM for the manifold." \\
+
+In the framework of Geodesic Autoencoders we see that the FIM is just the pullback via the encoder $\phi: R^{d} \to R^{m} $ of the Euclidean metric on $R^m$. We have trained $\phi$ to match Jensen-Shannon divergence, which is why this pullback yields the derivatives of log probabilities that are required for the FIM. We also need to weight the sum by the probabilities $\phi_k$.
+
+$$[\phi^* id_m]_{ij} = [J(\phi)^tJ(\phi)]_{ij}= [ \sum_k^m J(\phi)_{ki} J(\phi)_{kj} ]_{ij} $$
+
+
+
+\section{Method}
+
+% \subsection{Notations}
+% \par In this section,
+\subsection{Geodesic Distance Matching Autoencoder}
+\par We train an autoencoder that learns a latent representation of the data manifold that preserves local geodesic distances. 
+% \xin{Explain why earlier}
+% \par We train an autoencoder end-to-end \xin{can also separately train} that comprises of an encoder network that maps the data to the latent space, and a decoder network that maps the latent embeddings to the original data space (called ambient space). 
+\par The autoencoder model comprises of an encoder network that maps the data to the latent space, and a decoder network that maps the latent representation to the original data space (called ambient space). 
+\begin{align}
+    f(x)=&z\\
+    g(z)=&\hat x.
+\end{align}
+\par The model is trained with a combination of two loss terms: 
+The reconstruction loss that the encoder-decoder recovers the original data:
+\begin{align}
+    L^{recon}=\frac{1}{n}\sum_{i=1}^n||x_i-g(f(x_i))||_2^2,
+\end{align}
+and the distance-matching loss that encourages the encoder to preserve the geodesic distance:
+\begin{align}
+    L^{DM}=\frac{1}{n}\sum_{i<j}\left(||z_i-z_j||^2_2-d_{ij}\right)^2.
+\end{align}
+\par Because we want to preserve local distances, we use the weighted distance-matching loss with an exponential decay 
+\begin{align}
+    L^{WDM}=\frac{1}{n}\sum_{i<j}e^{-\alpha d_ij}\left(||z_i-z_j||^2_2-d_{ij}\right)^2,
+\end{align}
+where $\alpha>0$ is a hyperparameter.
+\begin{comment}
+\subsubsection{Distance matching on spaces with constant non-zero curvature}
+\par In the previous section, we assumed the embedding space is Euclidean and matched the Euclidean distance with the geodesic distance. We can generalize our embedding space to any space with constant curvature, namely, the sphere and the hyperbolic space.
+
+\paragraph{Geodesic distance on the sphere}
+\par The space with constant positive curvature is the sphere. On the sphere, the geodesics are defined by arcs of greater circles.
+On the sphere with radius $r$, The geodesic distance between two points $z_1, z_2, ||z_1||_2^2=||z_2||_2^2=r^2$ is:
+\begin{align}
+    d^{\mathbb S}_r(z_1,z_2)=r\arccos(\left<z_1,z_2\right>).
+\end{align}
+where $\left<\cdot,\cdot\right>$ is the inner product.
+\paragraph{Geodesic distance on the hyperbolic space}
+\par The space with constant negative curvature is the hyperbolic space. The hyperbolic space with curvature $-1/\beta^2$ is
+\begin{align}
+    \mathbb H^{d}=\{z\in\mathbb R^{d+1}:-(z^{(0)})^2+(z^{(1)})^2+\dots+(z^{(n)})^2=-\beta^2\}.
+\end{align} The geodesics distance between two points $z_1,z_2$ is
+\begin{align}
+    d^{\mathbb H}_\beta(z_1,z_2)=\beta\operatorname{arcosh}(B\left(z_1,z_2\right))
+\end{align}
+where $B(\cdot,\cdot)$ denotes the Minkowski inner product 
+\begin{align}
+    B(z_1, z_2)=-z_1^{(0)}z_2^{(0)}+z_1^{1}z_2^{(1)}+\dots+z_1^{(n)}z_2^{(n)}
+\end{align}
+% \par Without loss of generality, we can fix $r=1$ and $\beta=1$.  Denote $d^{\mathbb S}(z_1,z_2)=d_1^{\mathbb S}(z_1,z_2), d^{\mathbb H}(z_1,z_2)=d_1^{\mathbb H}(z_1,z_2), d^{\mathbb E}(z_1,z_2)=||z_1-z_2||_2$
+Denote $d^{\mathbb E}(z_1,z_2)=||z_1-z_2||_2$
+\par We hence define the general geodesic distance matching autoencoder with latent spaces of constant curvature:
+\begin{align}
+    L^{DM}=&\frac{1}{n}\sum_{i<j}\left(d(z_i,z_j)-d_{ij}\right)^2
+\end{align}
+where $d$ is $d^{\mathbb E},d_r^{\mathbb S},$ and $d_\beta^{\mathbb H}$ for Euclidean, sphere, and hyperbolic latent space, respectively.
+\par We make $r$ and $\beta$ learnable parameters so that the model can learn to match the data with the space of the best curvature.
+\par To put more emphasis on the more local distances, we use the exponential decay-weighted distance-matching loss
+\begin{align}
+    L^{WDM}=&\frac{1}{n}\sum_{i<j}e^{-\alpha d_{ij}}\left(d(z_i,z_j)_2-d_{ij}\right)^2.
+\end{align}
+where $\alpha>0$ is a hyperparameter.
+
+\subsubsection{Affinity matching preserves Fisher Information Metric}
+\par With the Diffusion operator, we can view the data points as parameters on a statistical manifold \cite{moon2019visualizing,fasina2023neural} (which is a sub-manifold of the statistical simplex). We map those parameters to a lower-dimensional parameter space of transition probabilities, and match the probabilities parameterized by these lower-dimensional parameter with the transition probabilities. Neural FIM \cite{fasina2023neural} proposed to use JS-distance-matching such that the Eulidean metric in the latent space approximates the FIM metric. However, this assumes that the statistical manifold is 
+able to be embedded into the low-dimensional Euclidean space, which is not necessarily true if the data has high intrinsic dimension. We propose FIM-affinity-matching, where we compute a kernel $k(x_i,x_j)$ on the embedded points, and compute the Markov transition probability matrix $P$, and match the pairwise JS divergence of the original data and the pairwise JS divergence of this transition probability from the embdding. The loss function is 
+\begin{align}
+    L^{AM}=\sum_{i<j}(JSD(p(x_i)||p(x_j))-JSD(q(z_i)||q(z_j)))^2
+\end{align}
+\par \xin{below DEPRECATED. switching to mapping JSD. Becaue the FIM is $\sqrt{8}$ of sqrt JSD.}
+{\color{gray}
+\par With the Diffusion operator, we can view the data points as parameters on a statistical manifold \cite{moon2019visualizing,fasina2023neural} (which is a sub-manifold of the statistical simplex). We map those parameters to a lower-dimensional parameter space of transition probabilities, and match the probabilities parameterized by these lower-dimensional parameter with the transition probabilities. We prove a relaxed version of this theorem
+\begin{theorem}
+    The Fisher information metric is invariant to reparameterization,
+    i.e., for probability distribution $p(x;\theta)$ and a reparameterization $\phi=\phi(\theta)$, and Fisher information metric
+    \begin{align}
+        I(\theta)=&\mathbb E_{\theta}\left[\left(\frac{\partial \log(p(\mathbf x;\theta))}{\partial \theta}\right)\left(\frac{\partial \log(p(\mathbf x;\theta))}{\partial \theta}\right)^T\right]\\
+        I(\phi)=&\mathbb E_{\phi}\left[\left(\frac{\partial \log(p(\mathbf x;\phi))}{\partial \phi}\right)\left(\frac{\partial \log(p(\mathbf x;\phi))}{\partial \phi}\right)^T\right]\\
+    \end{align}
+    we have $I(\phi)=\frac{\partial\theta}{\partial\phi}^TI(\theta)\frac{\partial\theta}{\partial\phi}.$
+\end{theorem}
+that if we can control the \sout{KL-divergence} \xin{zero-th order diffence such as KL divergence does not guarantee this matching. We need first order difference, which can be approximated by matching local distances.} between the original and reparametrized probability distributions, we can control the error between the Fisher information metrics:
+\begin{theorem}
+    For $\phi=\phi(\theta)$ and $q(\mathbf x;\phi)$, if $\big|\big|\frac{\partial \log q(\mathbf x;\phi)}{\partial \phi}-\left(\frac{\partial\theta}{\partial\phi}\right)^T\frac{\partial \log p(\mathbf x;\theta)}{\partial \theta}\big|\big|<\epsilon$, 
+    We have $||I(\phi)-\frac{\partial\theta}{\partial\phi}^TI(\theta)\frac{\partial\theta}{\partial\phi}||_2\leq C\epsilon^2$ for some constant $C>0.$\xin{[TODO] prove.}
+\end{theorem}
+\begin{align}
+    L^{AM}=\frac{1}{n}\sum_{i}\Big|\Big|\frac{\partial \log(p(x_i))}{\partial x_i}-\left(\frac{\partial z}{\partial x_i}\right)^T\frac{\partial \log(q(z_i))}{\partial z}\Big|\Big|^2
+\end{align}
+Because the function $p(x_i)$ is not differentiable (due to the usage of non-isotropic kernel and other tricks), we approximate the derivatives with the differences when the points are close to each other. 
+\begin{align}
+    L^{AM}\approx\frac{1}{n}\sum_{i<j}I\{d_{ij}<\epsilon\}\Big|\Big|{|\log(p(x_i))-\log(p(x_j))|}-{|\log(q(z_i))-\log(q(z_j))|}\Big|\Big|^2
+\end{align}
+\par We further apply the exponential decay-weighted loss with tunable $\alpha$.
+\begin{align}
+    L^{WAM}=\frac{1}{n}\sum_{i<j}e^{-\alpha d_{ij}}\Big|\Big|{|\log(p(x_i))-\log(p(x_j))|}-{|\log(q(z_i))-\log(q(z_j))|}\Big|\Big|^2
+\end{align}
+% \xin{Placeholder for approximation bounds?}
+}
+\end{comment}
+
+\subsection{Learning task-specific Riemannian metrics for geodesics}
+
+Many common operations in deep learning typically handled by dedicated networks or extra losses can be performed more elegantly by learning a Riemannian metric appropriate for the task. Doing so is easy – indeed, every differentiable model has already \emph{implicitly} learned such a metric. Our geodesic autoencoder leverages this explicitly in two places: to learn geodesics that stay on the manifold, and to do so directly in ambient space.
+
+Recall from the background that to learn a pullback metric, we need only find a map into a space whose geometry how the right properties for a given task.
+
+To learn geodesics, traditional methods use two losses: a length loss, and a penalty for going off the manifold. Instead, we learn a map $\xi: \mathbb{R}^{d} \rightarrow \mathbb{R}^{d+s}$ that preserves the dense regions of the embedding space within an $\mathbb{R}^{d}$ subspace of $\mathbb{R}^{d+5}$, but folds points off the manifold into higher dimensions:
+
+$$
+\xi(x) = I_d \oplus 0_{(m-d) \times(m-d)} + 0_{d \times d} \oplus I_{m-d} k(x) d(x)^\alpha
+$$
+
+Here $k:\mathbb{R}^d \to \mathbb{R}^m$ is a map that projects different parts of $\mathbb{R}^d$ into differing higher dimensions (e.g. a random matrix of size $m \times d$) and $d:\mathbb{R}^d \to \mathbb{R}$ is a `witness function' that discriminates whether $x$ is off the manifold, as described below.
+
+The pullback metric $\xi^{*}$ obtained from this map measures the Euclidean length of curves on the manifold, but incurs a sharp penalty in length whenever the curve strays of the manifold. 
+We find that this unified loss finds more accurate geodesics then the standard multi-loss approach.
+
+Using this off-manifold pullback metric, we can learn geodesics in latent space and decode them into the original coordinates. We can also apply a second pullback metric through the \emph{encoder} to learn geodesics directly in ambient space:
+
+$$
+\varphi^{*} \xi^{*} id(u, v)=\xi^*id\left(J_{\varphi} u, J_{\varphi} v\right)
+$$
+where $J_{\phi}$ is the Jacobian of $\phi$.
+
+The standard Euclidean metric in ambient space is usually unreliable in high-dimensional, noisy, sparse data. This encoder pullback metric assigns a locally euclidean structure to data which ignores noise and adapts to variations in density.
+\par\xin{[placeholder] off-manifolder image}
+
+
+\subsection{Training geodesics with a single loss}
+To realize this off-manifold pullback metric, we train a Wasserstein GAN-style discriminator using a negative sampling scheme inspired by graph signal processing. We then use this metric in a geodesic bridge model as proposed by [cite Neural FIM, X's discovered paper].
+
+\subsubsection{Negative Sampling}
+\par We generate negative samples away from the data manifold, so that we can train a discriminator that distinguishes the points on the manifold. Inspired by the observation in graph signal processing that the data features can be viewed as low-frequency signals on the graph of data points, and the noise is high-frequency signals\cite{leone2023bayesian,van2018recovering}, we generate negative points from high frequency signals.
+\par We first compute a graph affinity matrix between the data points by applying a kernel to the distances
+\begin{align}
+    K_{ij}=k(x_i,x_j)
+\end{align}
+wWe normalize $K$ by the degree $D=\operatorname{diag}(\sum_{j}K_{1j}, \dots,\sum_{j}K_{nj})$ to get the diffusion operator
+\begin{align}
+    P=&D^{-1}K
+\end{align}
+Eigendecomposing $P$, we get the Fourier operator $V^T$ and inverse Fourier operator $U$.
+\begin{align}
+    P=&U\Lambda V^T
+\end{align}
+We power $\Lambda$ to a power of $t$, to get a low-pass filter in the frequency domain. We know that  \cite{coifman2006diffusion} the eigenvalues are bounded:
+$0\leq\lambda_i\leq 1$. We generate white noise 
+\begin{align}
+    f=&(f_{ij})_{N\times p},f_{ij}\sim\mathcal N(0,1)
+\end{align}
+apply a high-pass filter to get high-frequency noise, and use the inverse Fourier operator to move it to the spatial domain.
+\begin{align}
+    y=&U(I-\Lambda^t) f
+\end{align}
+%     P=&U\Lambda V^T\\
+%     f=&(f_{ij})_{N\times p},f_{ij}\sim\mathcal N(0,1)\\
+%     y=&U(I-\Lambda^t) f
+% \end{align}
+
+
+\subsubsection{Discriminator}
+We train a discriminator $\mathcal{D}$ using Wasserstein distance to differentiate between data points on the manifold and those off the manifold. Furthermore, the K-Lipschitz constrained witness function $f_{w}$ learns to assign high scores for points on the manifold and low scores for points off the manifold. Later, we leverage the score of the witness function to scale the metric for points off the manifold. Assume data on the manifold are sampled from $p_{pos}$ and data off the manifold are sampled from $p_{neg}$, the discriminator loss is defined as such:
+\begin{align}
+    L^{\mathcal{D}} = \mathbb E_{x \sim p_{pos}} [f_w(x)] - \mathbb E_{x \sim p_{neg}} [f_w(x)] +
+    \lambda \mathbb E_{x \sim p} [(\| \nabla_x f_w(x) \|_2 - 1)^2],
+\end{align}
+where ${x \sim p}$ are uniformly sampled points from straight-line between sampled points from $p_{pos}$ and $p_{neg}$, and $\lambda$ is the weight for gradient penalty proposed by WGAN-GP[cite].
+
+\par\xin{[placeholder] discriminator image}
+\xin{We ended up not using gradient penalty because it was not stable. we used the spectral normalization and gradient clipping.}
+
+
+% \subsubsection{Encoder pullback}\xin{Adapted from the neural FIM paper and Ian's notes}\xin{moved from the previous draft, Kincaid, please feel free to modify or rewrite.}
+% \par Suppose we have the encoder $f:\mathbb R^n\to\mathbb R^d$, and we want to compute the geodesic on the manifold in the ambient space $\mathcal M^d\subset\mathbb R^n$.
+% We first compute the pullback metric of the Euclidean metric in the latent space $\mathbb R^{d}$
+% \begin{align}
+%     g_f:=f^*g_d&:T\mathcal M\times T\mathcal M\to \mathbb R\\
+%     f^*g_d(x)&=J_f(x)^T g_d J_f(x)=J_f(x)^T J_f(x),    
+% \end{align}
+% \xin{$g_d$ is not necessarily the Eucidean metric}
+
+% \xin{this is different from neural FIM as we are not taking the expectation over some probability distribution $\phi$.}
+
+% where $J_f(x)=\left(\frac{\partial f_i}{\partial x_j}(x)\right)_{n\times n}$ is the Jacobian of $f$, $g_d=I_d$ is the Euclidean metric on $\mathbb R^d$.
+% \par Given $x_0,x_1\in \mathcal M$, we want to solve for the geodesic between them, i.e., to find
+% \begin{align}
+%     c^*\in\underset{c\in C}{\arg\min}\int_{0}^{1}\sqrt{\dot c(t)^Tg_f(c(t))\dot c(t)} dt\label{eqn:geod_opt}
+% \end{align}
+% \gui{Should this be}
+% \begin{equation*}
+%     c^* \in {\arg\min}_{c\in\gC}\int_a^b \sqrt{g_f(\dot{c(t)}, \dot{c(t)}}) dt
+% \end{equation*}
+
+\subsubsection{Geodesic Bridge}
+% where $C=\{c\in \mathcal C^{1}(\left[0,1\right]): c(0)=x_0,c(1)=x_1, c(t)\in\mathcal M,\forall t\in\left[0,1\right]\}$.
+% \par \xin{The neural FIM paper use ODE and geodesic bridge to solve for the geodesic, implementationwise, we can first use the ODE because the code for the geodesic bridge is not ready yet.}
+% \par We parameterize the curve using a neural network\cite{fasina2023neural}
+% \begin{align}
+%     % \frac{dx}{dt}(x,t)=h_\theta(x,t),
+%     C_\theta(x_0,x_1,t)
+% \end{align}
+\xin{copied from FIM}
+\par We use a parametrization of curves akin to Schr\"odinger Bridge but with deterministic components. We train a function $C_\theta(x_0,x_1,t): \R^d \times \R^d \times [0,1] \to \R^d$ such that $C_\theta(x_0,x_1,t) := \mu(x_0,x_1,t) + \sigma(t)g_\theta(x_0,x_1,t)$, where
+\begin{enumerate}
+    \item $\mu(x_0, x_1, t):= tx_1 + (1-t)x_0$ is a linear interpolation guiding the center of the curve,
+    \item $\sigma(t): [0,1] \to \R+$ can be seen as a variance term enforcing our boundary conditions,
+    \item $g_\theta(x_0,x_1,t): \R^d \times \R^d \times [0,1] \to \R^d$, represent the displacement of the position at a given time $t$ with respect to the linear interpolation $\mu(x_0,x_1,t)$.
+\end{enumerate}
+\par The velocity is computed using the gradient of the network.
+\begin{align}
+    h_\theta(x_0,x_1,t)=\frac{\partial}{\partial t}C_\theta(x_0,x_1,t)
+\end{align}
+where $h_\theta$ is a neural network parameterized by $\theta$. This allows us to approximate (\ref{eqn:geod_opt}) by optimizing over $\theta$. We implement the boundary conditions using a regularization term $||\hat x_1-x_1||^2_2$, where $\hat x_1=x_0+\int_{0}^{1}h_\theta(x(t),t)dt$.
+In conclusion, the loss function w.r.t. $\theta$ is
+\begin{align}
+    \mathcal L(\theta)=\int_{0}^{1}\sqrt{h_\theta(x,t)^T g_f(x(t))h_\theta(x,t)}dt
+\end{align}
+The integration is approximated with a Riemann sum.
+
+
+% where $\lambda> 0$ is the coefficient for regularization.
+% \par \xin{How did neural FIM deal with this? some regularization?} Note that in order to keep the curve on the manifold, we want $h_\theta(x,t)\in T_x\mathcal M$. One way to do this is instead of directly parameterizing the vector with a neural network, compute the tangent vector as the a linear combination of a moving frame, and use a neural network to compute the linear coefficients. The frame can be computed by taking the right singular vectors of the Jacobian. That is,
+% \begin{align}
+%     h_\theta(x,t)=V(x)\alpha_\theta(x,t)
+% \end{align}
+% where $V$ is computed using the singular value decomposition
+% \begin{align}
+%     J_f(x)=U(x)S(x)V(x)^T.
+% \end{align}
+% \par We notice that using this parameterization we can  simplify (\ref{expn:geod_loss}) as
+% \begin{align}
+%     % \mathcal L(\theta)&=\int_{0}^{1}\sqrt{\alpha(x(t),t)^TS(x(t))^2\alpha(x(t),t)}dt+\lambda \Big|\Big|x_0-x_1+\int_{0}^{1}V(x(t))\alpha_\theta(x(t),t)dt\Big|\Big|^2_2\label{expn:geod_loss_simplif}\\
+%     L(\theta)&=\int_{0}^{1}\sqrt{\alpha_\theta^TS^2\alpha_\theta}dt+\lambda \Big|\Big|x_0-x_1+\int_{0}^{1}V\alpha_\theta dt\Big|\Big|^2_2\label{expn:geod_loss_simplif}
+% \end{align}
+% let $h_\theta(x,t)$ be a neural network parameterized by $\theta$
+% \begin{align}
+%     \underset{\theta}{\arg \min } \lambda\left\|\hat{\theta}_2-\theta_2\right\|_2^2+\int_a^b \sqrt{f_\theta^T \cdot g_{\gamma(t)} \cdot f_\theta} d t .
+% \end{align}
+
+
+% \subsection{Curvature inference}
+% \par Our embedding is equipped with a metric. Especially, it is the non-trivial FIM when we use affinity matching. We can compute the curvature of the manifold based on the FIM.
+
+\subsection{Generative model}
+\par In this section, we propose a generative model based on our embedding using latent diffusion \cite{rombach2022high}. We train a DDPM \cite{dhariwal2021diffusion} and generate points on the latent space, and use the decoder to generate points in the ambient space.
+The model approximates the (intractable) distribution  $q(z_0)$ of the data in the latent space using a chain of Bayesian steps, solved with minimizing the sum of variational inference losses.
+\par In each step, it adds a (Gaussian) noise to the data with $p(z_{t+1}|z_t)$, to get $z_{t+1}$, and we can write the posterior distribution using the Bayes rule
+\begin{align}
+    q(z_t|z_{t+1},x_0)=\frac{p(z_{t+1}|z_t)q(z_{t}|z_0)}{q(z_{t+1}|z_0)q(z_0)}
+\end{align}
+\par This is intractable because $p(z_t)$ is unknown. So we use variational inference to approximate $p(z_t|z_{t+1})$ with a neural network parameterized distribution $p_{\theta}(z_t|z_{t+1})$, and minimize the variational lower bound for each step.
+\begin{align}
+L_{\mathrm{vlb}} & :=L_0+L_1+\ldots+L_{T-1}+L_T \\
+L_0 & :=-\log p_\theta\left(x_0 \mid x_1\right) \\
+L_{t-1} & :=D_{K L}\left(q\left(x_{t-1} \mid x_t, x_0\right) \| p_\theta\left(x_{t-1} \mid x_t\right)\right) \\
+L_T & :=D_{K L}\left(q\left(x_T \mid x_0\right) \| p\left(x_T\right)\right)
+\end{align}
+\par For generation, we sample sequentially from 
+\begin{align}
+    p_{\theta}(z_0)=p_{\theta}(z_0|z_1)\dots p_\theta(z_{T-1}|z_{T})p(z_T)
+\end{align}
+Where $p(Z_T)$ is a (diagonal) Gaussian distribution, which is easy to sample from.
+After the data is generated, we use the decoder to map it to the ambient space
+\begin{align}
+    x_0=g(z_0)
+\end{align}
+\xin{above is background, but the way to write is explain our novelty. weave existing methods to our new idea.}\xin{don't separate the subsections, write a continous flow of methods}\xin{rename the sections, don't use the terms, but "extended embedding", "generative modeling" -- \emph{point to the novel computations.}}\xin{give a good first impression, prevent dismissive reviews}
+\begin{comment}
+\par This is a brief explanation for DDPM, \xin{need to explain notations}\xin{move to appendix?}
+\begin{itemize}
+    \item Markov noising process
+    \begin{align*}
+        X_i=\sqrt{1-\beta_i}X_{i-1}+\sqrt{\beta_i}Z
+    \end{align*}
+    \item Neural reverse process
+    \begin{align*}
+        X_{i-1}=\frac{1}{\sqrt{1-\beta_i}}(X_i+\beta_i s_\theta(X_i,i))+\sqrt{\beta_i}Z
+    \end{align*}
+    \item Score matching objective
+    \begin{align*}
+        &p_{\alpha_i}\left(X_i \mid X_0\right)=\mathcal{N}\left(X_i ; \sqrt{\alpha_i} X_0,\left(1-\alpha_i\right) {I}\right)\\
+        &\mathcal L(\theta)=\sum_{i=1}^N\left(1-\alpha_i\right) \mathbb{E}_{p_{}(X)} \mathbb{E}_{p_{\alpha_i}(\tilde{X} \mid X)}\left[\left\|{s}_{{\theta}}(\tilde{X}, i)-\nabla\log p_{\alpha_i}(\tilde{X} \mid X)\right\|_2^2\right]
+    \end{align*}
+\end{itemize}
+\end{comment}
+
+\subsubsection{Evaluation metrics}
+
+
+\section{Results}
+put tables in
+\subsection{Autoencoder}
+\xin{plan: 1. compute DEMaP and Adjustive ranking index(?) and compare with phate, tsne, umap, 2. compare reconstruction metric 3. visualize latent space}
+% \subsubsection{DEMaP}
+% \subsubsection{Adjustive ranking index}
+% \subsubsection{Reconstruction score metric}
+\subsection{Geodesic and Curvature}
+\xin{plan: 1. curve length}
+\par\xin{comparison: our own }
+\subsubsection{Visualizations}
+\subsubsection{Curve length}
+\subsection{Curvature}
+\subsection{Generative model}
+\xin{plan: 1. latent: compute wasserstein distance, 2. ambient: compute reconstruction metric 3. ambient: compute geosink. }
+\xin{compare with:}
+
+\section{Conclusion}
+
+%\newpage
+
+%\clearpage
+\bibliographystyle{plainnat}
+%\bibliography{ref}
+\bibliography{ref_new}
+
+
+
+\end{document}
