@@ -148,7 +148,44 @@ Empirically, we show that our geometric-aware embeddings preserve geodesic dista
 \section{Background}
 \subsection{Diffusion geometry}
 
-\subsection{Riemannian manifold and metric}
+\subsection{Riemannian manifold and metric} 
+
+%% Add background on manifold
+
+Given a smooth map between smooth manifolds $f \colon M \to N$ we can define the differential $df$ of this map which at a point $p\in M$ is a map between tangent spaces $df_p \colon T_pM \to T_{f(p)} N$. We can use this map $df$ to pull back a metric $g$ on $N$ to a metric denoted $f^*g$ on $M$. In order to define this pullback we simply need to say what value it takes on a pair of vectors $X,Y \in T_pM$. The pullback metric is defined to be $f^*g(X,Y)= g(df_pX,df_pY )$ where $df_pX,df_pY  \in T_{f(p)} N$ are the pushforward vectors, i.e.~the image of $X$ and $Y$ under the differential. 
+
+
+In the setting of this paper, the map $f$ is the neural network embedding and its differential $df$ is called the Jacobian and denoted $J(f)$. We equip the latent space with the Eucliden metric $g=Id$ because we train embeddings where locally the Euclidean distance in the latent space has geometric relvance. We pullback the Eucliddean metric to the ambient space where it appears equivalently as $f^*g(X,Y)= g(df_pX,df_pY )= X^t J(f)^t_p ~Id~ J(f)_p Y = X^t J(f)^t_p J(f)_p Y$. This pullback metric induces a non-Euclidean geometry on the data manifold (embedded in the high dimensional ambient space) and we can use it to compute standard geometric quantities such as volume, length, and curvature. 
+
+\begin{comment}
+A Riemannian metric is a square matrix $g$ defined for every point $x$ which, through the inner product $\langle v, v\rangle_{g}=u g v^{\top}$, describes the difficulty of moving in each direction around that point. \ian{I don't understand this difficulty comment, maybe you are thinking about the Jacobian?}
+
+The pullback metric given by a map $\varphi: X \rightarrow Y$ ``pulls'' the metric $g_{Y}$ on $Y$ into a metric $\varphi^* g_Y$ on $X$. To find $\left\langle x_{1}, x_{2}\right\rangle_{\varphi} g_{r}$, you use the differential $d\varphi$ (also known, in neural networks, as the Jacobian $J_{\varphi}$) to map tangent vectors from $X$ to $Y$. The pullback metric is then defined as 
+
+$$
+\left\langle J_{\varphi} \left(x_{1}\right), J_{\varphi}\left(x_{2}\right)\right\rangle_{g_Y}
+$$
+, the inner product in $Y$ with respect to $Y$'s metric $g_Y$ at the point $\varphi{x}$.
+\xin{add Neural FIM} \ian{would also just use the language and notation from my write up, feel free to copy/paste the relevant sections, I even comment briefly on the relation to neuralFIM}
+\section{Related Work}
+Several prior works have been done on learning continuous metrics in data ambient space. Neural FIM [CITE] learns the Fisher Information Metric from point cloud data by matching Jensen-Shannon divergence between rows of distribution in a latent statistical manifold with Jensen-Shannon divergence between rows of diffusion probability from PHATE operator. \danqi{data manifold interpolation}
+
+
+\end{comment}
+
+
+\paragraph{NeuralFIM}
+
+The paper NeuralFIM presents a specific example of the general framework that we propose in the current paper. In NeuralFIM, point cloud data is treated as a statistical manifold (each point replaced by its diffusion probability distribution) and a neural net embedding is trained to match Jensin-Shannon divergence. It is shown then that the pullback of the Euclidean metric on the latent space yields the Fisher Information Metric (FIM) on the data/statistical manifold embedded in ambient space. The FIM is a standard metric on statistical manifolds whose intrinsic distances reveal information about the distinguishability between probability distributions. NeuralFIM thus illustrates the idea that a well trained encoder (where Euclidean distance in latent space has intrinsic meaning) produces an informative pullback metric in ambient space. 
+
+``To obtain the continuous FIM for each dataset, we first compute the diffusion operator matrix $\mathbf{P}(x,\cdot) \in R^{n \times n}$ for each batch of point cloud data. We then embed each point in the batch $x_i \in R^{d}$ using the encoding network, neural-FIM $\phi: R^{d} \to R^{m} $ where $d$ is the original dimension of the point cloud data and $m$ is the last dimension of the encoder. Next, train the neural FIM using the loss defined in Equation 6 (matching Jensen-Shannon divergence).
+
+We can then compute the Jacobian  $\mathbf{J}(x_i) \in R^{m \times d}$ for each point of the network output  $x_i \in R^m$  with respect to the input coordinates. An FIM $I_\phi(x_i) \in R^{d \times d}$ can then be computed (using Equation 5) for any point input to neural-FIM, thus yielding a continuous FIM for the manifold." \\
+
+In the framework of Geodesic Autoencoders we see that the FIM is just the pullback via the encoder $\phi: R^{d} \to R^{m} $ of the Euclidean metric on $R^m$. We have trained $\phi$ to match Jensen-Shannon divergence, which is why this pullback yields the derivatives of log probabilities that are required for the FIM. We also need to weight the sum by the probabilities $\phi_k$.
+
+$$[\phi^* id_m]_{ij} = [J(\phi)^tJ(\phi)]_{ij}= [ \sum_k^m J(\phi)_{ki} J(\phi)_{kj} ]_{ij} $$
+
 
 
 
